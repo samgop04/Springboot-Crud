@@ -1,45 +1,44 @@
 package com.example.demo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
-//import static com.example.demo.TopicRepository.*;
 
 @Service
 public class TopicService {
 
-   /* private List<Topic> topics=new ArrayList<>(Arrays.asList(
-            new Topic("Spring","Spring Framework","Spring Framework description"),
-            new Topic("SpringBoot","Spring Framework","Spring Framework description"),
-            new Topic("SpringMethod","Spring Framework","Spring Framework description")
-    ));*/
     @Autowired
     private TopicRepository topicRepository;
 
     public List<Topic> getAllTopic(){
-        //return topics;
-        List<Topic>topics=new ArrayList<>();
-        topicRepository.findAll().forEach(topics::add);
-        return topics;
+        return topicRepository.findAll();
     }
 
-    public Topic getTopicById(String id)
-    {
-        return topicRepository.findById(id).orElse(null);
+    public Topic getTopicById(String id) throws NotFoundException {
+        Optional<Topic> topicFound = topicRepository.findById(id);
+        if(!topicFound.isPresent()){
+            throw new NotFoundException("Topic not found");
+        }
+        return topicFound.get();
     }
     public void addTopic(Topic topic) {
+       Topic mTopic = topicRepository.getByName(topic.getName());
+       if(mTopic!=null){
+           throw new NullPointerException();
+       }
         topicRepository.save(topic);
-        //topics.add(topic);
     }
     public void updateTopic (String id, Topic topic)
     {
+        topic.setId(id);
         topicRepository.save(topic);
+
     }
     public void deleteTopic(String id)
     {
